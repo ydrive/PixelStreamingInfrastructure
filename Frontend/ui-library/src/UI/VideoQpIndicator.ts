@@ -1,5 +1,7 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
+import { PixelStreaming } from "@epicgames-ps/lib-pixelstreamingfrontend-ue5.2";
+
 /**
  * A UI element showing the QP (quantization parameter) of the video stream at the last encoded frame (well, last transmitted QP really).
  * A blockier encoding will have a higher QP and this will make the indicator turn more red.
@@ -8,6 +10,7 @@
  */
 export class VideoQpIndicator {
     videoEncoderAvgQP = -1;
+    stream: PixelStreaming;
 
     // non html elements
     statsText = '';
@@ -20,10 +23,16 @@ export class VideoQpIndicator {
     _rootElement: HTMLElement;
     _qualityText: HTMLElement;
     _qualityStatus: SVGElement;
+    _jumpButton: SVGElement;
+    _jumpIcon: SVGElement;
     _dot: SVGElement;
     _outer: SVGElement;
     _middle: SVGElement;
     _inner: SVGElement;
+
+    constructor(stream : PixelStreaming) {
+        this.stream = stream;
+    }
 
     /**
      * Get the root element of the QP indicator.
@@ -37,6 +46,7 @@ export class VideoQpIndicator {
 
             // add svg icon for the connection strength
             this._rootElement.appendChild(this.qualityStatus);
+            this._rootElement.appendChild(this.jumpButton);
 
             // add the text underneath the connection
             this._rootElement.appendChild(this.qualityText);
@@ -54,7 +64,7 @@ export class VideoQpIndicator {
         if (!this._qualityText) {
             this._qualityText = document.createElement('span');
             this._qualityText.id = 'qualityText';
-            this._qualityText.classList.add('tooltiptext');
+            // this._qualityText.classList.add('tooltiptext');
         }
         return this._qualityText;
     }
@@ -86,8 +96,45 @@ export class VideoQpIndicator {
             this.qualityStatus.appendChild(this.middle);
             this.qualityStatus.appendChild(this.outer);
             this.qualityStatus.appendChild(this.inner);
+            this.qualityStatus.style.display = `none`;
         }
         return this._qualityStatus;
+    }
+
+    /**
+     * Get the jump button.
+     */
+    public get jumpButton(): SVGElement {
+        if (!this._jumpButton) {
+            this._jumpIcon = document.createElementNS(
+                'http://www.w3.org/2000/svg',
+                'path'
+            );
+            this._jumpIcon.setAttributeNS(null, 'id', 'jumpIcon');
+            this._jumpIcon.setAttributeNS(
+                null,
+                'd',
+                'M467.925,204.625c-6.8,0-13.5-2.6-18.7-7.8c-111.5-111.4-292.7-111.4-404.1,0c-10.3,10.3-27.1,10.3-37.4,0s-10.3-27.1,0-37.4c64-64,149-99.2,239.5-99.2s175.5,35.2,239.5,99.2c10.3,10.3,10.3,27.1,0,37.4C481.425,202.025,474.625,204.625,467.925,204.625z'
+            );
+            this._jumpIcon.setAttributeNS(null, 'fill', '#ffffff');
+
+            this._jumpButton = document.createElementNS(
+                'http://www.w3.org/2000/svg',
+                'svg'
+            );
+            this._jumpButton.setAttributeNS(null, 'id', 'jumpButton');
+            this._jumpButton.setAttributeNS(null, 'x', '0px');
+            this._jumpButton.setAttributeNS(null, 'y', '0px');
+            this._jumpButton.setAttributeNS(null, 'viewBox', '0 0 494.45 494.45');
+
+            this._jumpButton.onclick = () => {
+                this.stream.emitUIInteraction("JumpCommand");
+            };
+
+            // build jump icon
+            this._jumpButton.appendChild(this._jumpIcon);
+        }
+        return this._jumpButton;
     }
 
     /**
@@ -169,21 +216,21 @@ export class VideoQpIndicator {
      * @param speed - Set the speed of the blink, higher numbers make the status light blink faster.
      */
     blinkVideoQualityStatus(speed: number) {
-        let iteration = speed;
-        let opacity = 1;
-        const tickID = setInterval(() => {
-            opacity -= 0.1;
-            this.qualityText.style.opacity = String(
-                Math.abs((opacity - 0.5) * 2)
-            );
-            if (opacity <= 0.1) {
-                if (--iteration == 0) {
-                    clearInterval(tickID);
-                } else {
-                    opacity = 1;
-                }
-            }
-        }, 100 / speed);
+        // let iteration = speed;
+        // let opacity = 1;
+        // const tickID = setInterval(() => {
+        //     opacity -= 0.1;
+        //     this.qualityText.style.opacity = String(
+        //         Math.abs((opacity - 0.5) * 2)
+        //     );
+        //     if (opacity <= 0.1) {
+        //         if (--iteration == 0) {
+        //             clearInterval(tickID);
+        //         } else {
+        //             opacity = 1;
+        //         }
+        //     }
+        // }, 100 / speed);
     }
 
     /**
@@ -192,38 +239,38 @@ export class VideoQpIndicator {
      */
     updateQpTooltip(QP: number) {
         this.videoEncoderAvgQP = QP;
-        if (QP > this.redQP) {
-            this.color = 'red';
-            this.blinkVideoQualityStatus(2);
-            this.statsText = `<div style="color: ${this.color}">Poor encoding quality</div>`;
-            this.outer.setAttributeNS(null, 'fill', '#3c3b40');
-            this.middle.setAttributeNS(null, 'fill', '#3c3b40');
-            this.inner.setAttributeNS(null, 'fill', this.color);
-            this.dot.setAttributeNS(null, 'fill', this.color);
-        } else if (QP > this.orangeQP) {
-            this.color = 'orange';
-            this.blinkVideoQualityStatus(1);
-            this.statsText = `<div style="color: ${this.color}">Blocky encoding quality</div>`;
-            this.outer.setAttributeNS(null, 'fill', '#3c3b40');
-            this.middle.setAttributeNS(null, 'fill', this.color);
-            this.inner.setAttributeNS(null, 'fill', this.color);
-            this.dot.setAttributeNS(null, 'fill', this.color);
-        } else if (QP <= 0) {
-            this.color = '#b0b0b0';
-            this.outer.setAttributeNS(null, 'fill', '#3c3b40');
-            this.middle.setAttributeNS(null, 'fill', '#3c3b40');
-            this.inner.setAttributeNS(null, 'fill', '#3c3b40');
-            this.dot.setAttributeNS(null, 'fill', '#3c3b40');
-            this.statsText = `<div style="color: ${this.color}">Not connected</div>`;
-        } else {
-            this.color = 'lime';
-            this.qualityStatus.style.opacity = '1';
-            this.statsText = `<div style="color: ${this.color}">Clear encoding quality</div>`;
-            this.outer.setAttributeNS(null, 'fill', this.color);
-            this.middle.setAttributeNS(null, 'fill', this.color);
-            this.inner.setAttributeNS(null, 'fill', this.color);
-            this.dot.setAttributeNS(null, 'fill', this.color);
-        }
-        this.qualityText.innerHTML = this.statsText;
+        // if (QP > this.redQP) {
+        //     this.color = 'red';
+        //     this.blinkVideoQualityStatus(2);
+        //     this.statsText = `<div style="color: ${this.color}">Poor encoding quality</div>`;
+        //     this.outer.setAttributeNS(null, 'fill', '#3c3b40');
+        //     this.middle.setAttributeNS(null, 'fill', '#3c3b40');
+        //     this.inner.setAttributeNS(null, 'fill', this.color);
+        //     this.dot.setAttributeNS(null, 'fill', this.color);
+        // } else if (QP > this.orangeQP) {
+        //     this.color = 'orange';
+        //     this.blinkVideoQualityStatus(1);
+        //     this.statsText = `<div style="color: ${this.color}">Blocky encoding quality</div>`;
+        //     this.outer.setAttributeNS(null, 'fill', '#3c3b40');
+        //     this.middle.setAttributeNS(null, 'fill', this.color);
+        //     this.inner.setAttributeNS(null, 'fill', this.color);
+        //     this.dot.setAttributeNS(null, 'fill', this.color);
+        // } else if (QP <= 0) {
+        //     this.color = '#b0b0b0';
+        //     this.outer.setAttributeNS(null, 'fill', '#3c3b40');
+        //     this.middle.setAttributeNS(null, 'fill', '#3c3b40');
+        //     this.inner.setAttributeNS(null, 'fill', '#3c3b40');
+        //     this.dot.setAttributeNS(null, 'fill', '#3c3b40');
+        //     this.statsText = `<div style="color: ${this.color}">Not connected</div>`;
+        // } else {
+        //     this.color = 'lime';
+        //     this.qualityStatus.style.opacity = '1';
+        //     this.statsText = `<div style="color: ${this.color}">Clear encoding quality</div>`;
+        //     this.outer.setAttributeNS(null, 'fill', this.color);
+        //     this.middle.setAttributeNS(null, 'fill', this.color);
+        //     this.inner.setAttributeNS(null, 'fill', this.color);
+        //     this.dot.setAttributeNS(null, 'fill', this.color);
+        // }
+        // this.qualityText.innerHTML = this.statsText;
     }
 }

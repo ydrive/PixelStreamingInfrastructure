@@ -24,7 +24,7 @@ export class PixelStreamingApplicationStyle {
         '--color4': '#35b350',
         '--color5': '#ffab00',
         '--color6': '#e1e2dd',
-        '--color7': '#c3c4bf'
+        '--color7': '#c3c4bf80'
     };
 
     defaultDarkModePalette: ColorPalette = {
@@ -35,7 +35,7 @@ export class PixelStreamingApplicationStyle {
         '--color4': '#35b350',
         '--color5': '#ffab00',
         '--color6': '#1e1d22',
-        '--color7': '#3c3b40'
+        '--color7': '#3c3b4080'
     };
 
     defaultStyles = {
@@ -47,7 +47,7 @@ export class PixelStreamingApplicationStyle {
             '--color4': '#35b350',
             '--color5': '#ffab00',
             '--color6': '#1e1d22',
-            '--color7': '#3c3b40',
+            '--color7': '#3c3b4080',
             '--color8': '#41008c',
             '--color9': '#3e0070',
             '--color10': '#2e0052',
@@ -104,9 +104,13 @@ export class PixelStreamingApplicationStyle {
             padding: '5px 10px'
         },
         '#connection': {
+            borderRadius: '50%',
+            backgroundColor: 'var(--color7)',
+            padding: '0.5rem',
             position: 'absolute',
-            bottom: '8%',
-            left: '5%',
+            bottom: '5%',
+            left: '50%',
+            transform: 'translateX(-50%)',
             fontFamily: "'Michroma', sans-serif",
             height: '3rem',
             width: '3rem',
@@ -119,14 +123,10 @@ export class PixelStreamingApplicationStyle {
             left: '0',
             zIndex: '20',
             padding: '5px 10px',
-            border: '3px solid var(--color3)',
             width: 'max-content',
             fallbacks: [
                 {
                     width: 'max-content'
-                },
-                {
-                    border: '3px solid var(--color3)'
                 },
                 {
                     padding: '5px 10px'
@@ -188,15 +188,11 @@ export class PixelStreamingApplicationStyle {
             textAlign: 'center'
         },
         '#uiFeatures button:hover': {
-            backgroundColor: 'var(--color3)',
-            border: '3px solid var(--color3)',
             transition: '0.25s ease',
             paddingLeft: '0.55rem',
             paddingTop: '0.55rem'
         },
         '#uiFeatures button:active': {
-            border: '3px solid var(--color3)',
-            backgroundColor: 'var(--color7)',
             paddingLeft: '0.55rem',
             paddingTop: '0.55rem'
         },

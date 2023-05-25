@@ -24,20 +24,20 @@ import { SettingsPanel } from '../UI/SettingsPanel';
 import { StatsPanel } from '../UI/StatsPanel';
 import { VideoQpIndicator } from '../UI/VideoQpIndicator';
 import { ConfigUI, LightMode } from '../Config/ConfigUI';
-import { 
-    UIElementCreationMode, 
-    PanelConfiguration, 
+import {
+    UIElementCreationMode,
+    PanelConfiguration,
     isPanelEnabled,
     UIElementConfig
 } from '../UI/UIConfigurationTypes'
 import { FullScreenIconBase, FullScreenIconExternal } from '../UI/FullscreenIcon';
 
 
-/** 
+/**
  * Configuration of the internal video QP indicator element.
  * By default, one will be made, but if needed this can be disabled.
- * 
- * Note: For custom UI elements to react to the QP being changed, use a PixelStreaming 
+ *
+ * Note: For custom UI elements to react to the QP being changed, use a PixelStreaming
  * object's addEventListener('videoEncoderAvgQP', ...) or removeEventListener(...).
  */
 export type VideoQPIndicatorConfig = {
@@ -67,7 +67,7 @@ export interface UIOptions {
 
 /**
  * An Application is a combination of UI elements to display and manage a WebRTC Pixel Streaming
- * connection. It includes features for controlling a stream with mouse and keyboard, 
+ * connection. It includes features for controlling a stream with mouse and keyboard,
  * managing connection endpoints, as well as displaying stats and other information about it.
  */
 export class Application {
@@ -102,7 +102,7 @@ export class Application {
      */
     constructor(options: UIOptions) {
         this._options = options;
-        
+
         this.stream = options.stream;
         this.onColorModeChanged = options.onColorModeChanged;
         this.configUI = new ConfigUI(this.stream.config);
@@ -114,17 +114,17 @@ export class Application {
             this.statsPanel = new StatsPanel();
             this.uiFeaturesElement.appendChild(this.statsPanel.rootElement);
         }
-        
+
         if (isPanelEnabled(options.settingsPanelConfig)) {
             // Add settings panel
             this.settingsPanel = new SettingsPanel();
             this.uiFeaturesElement.appendChild(this.settingsPanel.rootElement);
             this.configureSettings();
         }
-        
+
         if (!options.videoQpIndicatorConfig || !options.videoQpIndicatorConfig.disableIndicator) {
             // Add the video stream QP indicator
-            this.videoQpIndicator = new VideoQpIndicator();
+            this.videoQpIndicator = new VideoQpIndicator(this.stream);
             this.uiFeaturesElement.appendChild(this.videoQpIndicator.rootElement);
         }
 
@@ -186,9 +186,9 @@ export class Application {
         this.uiFeaturesElement.appendChild(controls.rootElement);
 
         // When we fullscreen we want this element to be the root
-        const fullScreenButton : FullScreenIconBase | undefined = 
+        const fullScreenButton : FullScreenIconBase | undefined =
             // Depending on if we're creating an internal button, or using an external one
-            (!!this._options.fullScreenControlsConfig 
+            (!!this._options.fullScreenControlsConfig
                 && this._options.fullScreenControlsConfig.creationMode === UIElementCreationMode.UseCustomElement)
             // Either create a fullscreen class based on the external button
             ? new FullScreenIconExternal(this._options.fullScreenControlsConfig.customElement)
@@ -197,8 +197,8 @@ export class Application {
         if (fullScreenButton) fullScreenButton.fullscreenElement = this.rootElement;
 
         // Add settings button to controls
-        const settingsButton : HTMLElement | undefined = 
-            !!controls.settingsIcon ? controls.settingsIcon.rootElement : 
+        const settingsButton : HTMLElement | undefined =
+            !!controls.settingsIcon ? controls.settingsIcon.rootElement :
             this._options.settingsPanelConfig.visibilityButtonConfig.customElement;
         if (!!settingsButton) settingsButton.onclick = () =>
             this.settingsClicked();
@@ -206,16 +206,16 @@ export class Application {
             this.settingsClicked();
 
         // Add WebXR button to controls
-        const xrButton : HTMLElement | undefined = 
-            !!controls.xrIcon ? controls.xrIcon.rootElement : 
+        const xrButton : HTMLElement | undefined =
+            !!controls.xrIcon ? controls.xrIcon.rootElement :
             this._options.xrControlsConfig.creationMode === UIElementCreationMode.UseCustomElement ?
             this._options.xrControlsConfig.customElement : undefined;
         if (!!xrButton) xrButton.onclick = () =>
             this.stream.toggleXR();
 
         // setup the stats/info button
-        const statsButton : HTMLElement | undefined = 
-            !!controls.statsIcon ? controls.statsIcon.rootElement : 
+        const statsButton : HTMLElement | undefined =
+            !!controls.statsIcon ? controls.statsIcon.rootElement :
             this._options.statsPanelConfig.visibilityButtonConfig.customElement;
         if (!!statsButton) statsButton.onclick = () => this.statsClicked()
 

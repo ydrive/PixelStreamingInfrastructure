@@ -43,7 +43,7 @@ export class FullScreenIconBase {
         this._rootElement = element;
     }
 
-    constructor() {       
+    constructor() {
         // set up the full screen events
         document.addEventListener(
             'webkitfullscreenchange',
@@ -145,7 +145,7 @@ export class FullScreenIcon extends FullScreenIconBase {
 
     constructor() {
         super();
-        
+
         const createdButton : HTMLButtonElement = document.createElement('button');
         createdButton.type = 'button';
         createdButton.classList.add('UiTool');
@@ -160,8 +160,8 @@ export class FullScreenIcon extends FullScreenIconBase {
     public get tooltipText(): HTMLElement {
         if (!this._tooltipText) {
             this._tooltipText = document.createElement('span');
-            this._tooltipText.classList.add('tooltiptext');
-            this._tooltipText.innerHTML = 'Fullscreen';
+            // this._tooltipText.classList.add('tooltiptext');
+            // this._tooltipText.innerHTML = 'Fullscreen';
         }
         return this._tooltipText;
     }

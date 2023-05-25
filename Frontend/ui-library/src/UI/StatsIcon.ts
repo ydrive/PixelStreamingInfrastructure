@@ -19,6 +19,7 @@ export class StatsIcon {
             this._rootElement.id = 'statsBtn';
             this._rootElement.appendChild(this.statsIcon);
             this._rootElement.appendChild(this.tooltipText);
+            this._rootElement.style.display = 'none';
         }
         return this._rootElement;
     }
