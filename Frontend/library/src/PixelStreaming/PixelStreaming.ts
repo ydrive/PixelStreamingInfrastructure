@@ -368,7 +368,7 @@ export class PixelStreaming {
      * Emit an event on auto connecting
      */
     _onWebRtcAutoConnect() {
-        throw new Error("Not implemented");
+        // throw new Error("Not implemented");
         // this._eventEmitter.dispatchEvent(new WebRtcAutoConnectEvent());
         // this._showActionOrErrorOnDisconnect = true;
     }
