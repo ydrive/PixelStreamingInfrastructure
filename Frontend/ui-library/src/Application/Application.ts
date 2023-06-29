@@ -158,7 +158,7 @@ export class Application {
             this.stream.videoElementParent
         );
 
-        this.disconnectOverlay.onAction(() => this.stream.reconnect());
+        this.disconnectOverlay.onAction(() => { throw new Error("Not implemented") });
 
         // Build the webRtc connect overlay Event Listener and show the connect overlay
         this.connectOverlay.onAction(() => this.stream.connect());
