@@ -374,7 +374,7 @@ export class Config {
                 Flags.MatchViewportResolution,
                 'Match viewport resolution',
                 'Pixel Streaming will be instructed to dynamically resize the video stream to match the size of the video element.',
-                true,
+                false,
                 useUrlParams
             )
         );
