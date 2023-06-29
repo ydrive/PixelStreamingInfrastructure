@@ -217,9 +217,9 @@ if(config.UseAuthentication){
 	var urlencodedParser = bodyParser.urlencoded({ extended: false })
 
 	//login page form data is posted here
-	app.post('/login', 
-		urlencodedParser, 
-		passport.authenticate('local', { failureRedirect: '/login' }), 
+	app.post('/login',
+		urlencodedParser,
+		passport.authenticate('local', { failureRedirect: '/login' }),
 		function(req, res){
 			//On success try to redirect to the page that they originally tired to get to, default to '/' if no redirect was found
 			var redirectTo = req.session.redirectTo ? req.session.redirectTo : '/';
@@ -254,7 +254,7 @@ if(config.EnableWebserver) {
 	// Request has been sent to site root, send the homepage file
 	app.get('/', isAuthenticated('/login'), function (req, res) {
 		homepageFile = (typeof config.HomepageFile != 'undefined' && config.HomepageFile != '') ? config.HomepageFile.toString() : defaultConfig.HomepageFile;
-		
+
 		let pathsToTry = [ path.join(__dirname, homepageFile), path.join(__dirname, '/Public', homepageFile), path.join(__dirname, '/custom_html', homepageFile), homepageFile ];
 
 		// Try a few paths, see if any resolve to a homepage file the user has set
@@ -516,7 +516,7 @@ streamerServer.on('connection', function (ws, req) {
 		}
 		handler(streamer, msg);
 	});
-	
+
 	ws.on('close', function(code, reason) {
 		console.error(`streamer ${streamer.id} disconnected: ${code} - ${reason}`);
 		onStreamerDisconnected(streamer);
@@ -722,6 +722,14 @@ playerServer.on('connection', function (ws, req) {
 	{
 		console.logColor(logging.Red, `new connection would exceed number of allowed concurrent connections. Max: ${maxPlayerCount}, Current ${playerCount}`);
 		ws.close(1013, `too many connections. max: ${maxPlayerCount}, current: ${playerCount}`);
+		console.log(`unsubscribing all players`);
+		let clone = new Map(players);
+		for (let player of clone.values()) {
+			// onPlayerDisconnected(player.id);
+			if (player.id !== SFUPlayerId) {
+				player.ws.close();
+			}
+		}
 		return;
 	}
 
@@ -787,11 +795,11 @@ function disconnectAllPlayers(streamerId) {
 		 if (player.streamerId == streamerId) {
 		 	// disconnect players but just unsubscribe the SFU
 		 	if (player.id == SFUPlayerId) {
-		 		// because we're working on a clone here we have to access directly
-				getSFU().unsubscribe();
-			} else {
-				player.ws.close();
-			}
+				// because we're working on a clone here we have to access directly
+			   getSFU().unsubscribe();
+		   } else {
+			   player.ws.close();
+		   }
 		}
 	}
 }
@@ -806,7 +814,7 @@ if (config.UseMatchmaker) {
 	matchmaker.on('connect', function() {
 		console.log(`Cirrus connected to Matchmaker ${matchmakerAddress}:${matchmakerPort}`);
 
-		// message.playerConnected is a new variable sent from the SS to help track whether or not a player 
+		// message.playerConnected is a new variable sent from the SS to help track whether or not a player
 		// is already connected when a 'connect' message is sent (i.e., reconnect). This happens when the MM
 		// and the SS get disconnected unexpectedly (was happening often at scale for some reason).
 		var playerConnected = false;
@@ -839,7 +847,7 @@ if (config.UseMatchmaker) {
 	matchmaker.on('close', (hadError) => {
 		console.logColor(logging.Blue, 'Setting Keep Alive to true');
         matchmaker.setKeepAlive(true, 60000); // Keeps it alive for 60 seconds
-		
+
 		console.log(`Matchmaker connection closed (hadError=${hadError})`);
 
 		reconnect();
@@ -1040,7 +1048,7 @@ function sendStreamerDisconnectedToMatchmaker() {
 		message = {
 			type: 'streamerDisconnected'
 		};
-		matchmaker.write(JSON.stringify(message));	
+		matchmaker.write(JSON.stringify(message));
 	} catch (err) {
 		console.logColor(logging.Red, `ERROR sending streamerDisconnected: ${err.message}`);
 	}
